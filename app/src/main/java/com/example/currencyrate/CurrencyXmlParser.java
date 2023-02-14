@@ -29,6 +29,7 @@ public class CurrencyXmlParser {
                     currencyList.add(currentCurrency);
                     currentCurrency.setName(xpp.getAttributeValue(0));
                     currentCurrency.setRate(Float.valueOf(xpp.getAttributeValue(1)));
+                    Log.v("COIN_RATE", xpp.getAttributeValue(1));
                 }
                 xpp.next();
             }
@@ -40,5 +41,3 @@ public class CurrencyXmlParser {
         return currencyList;
     }
 }
-
-// завершить цикл если продукт найден (цикл while)
