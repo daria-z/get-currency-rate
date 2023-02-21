@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -36,42 +37,31 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView contentView = findViewById(R.id.content);
-        Button btnFetch = findViewById(R.id.downloadBtn);
+        new Thread(() -> {
+            try{
+                content = getContent(uri);
 
-        btnFetch.setOnClickListener(v -> {
-            contentView.setText("Загрузка...");
-            new Thread(() -> {
-                try{
-                    content = getContent(uri);
-                    contentView.post(() -> contentView.setText(content));
+                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                XmlPullParser xpp = factory.newPullParser();
+                xpp.setInput(new StringReader(content));
 
-                    XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-                    factory.setNamespaceAware(true);
-                    XmlPullParser xpp = factory.newPullParser();
-                    xpp.setInput(new StringReader(content));
+                CurrencyXmlParser currencyParser = new CurrencyXmlParser(xpp);
+                currenciesList = currencyParser.getCurrencyList();
 
-                    CurrencyXmlParser currencyParser = new CurrencyXmlParser(xpp);
-                    currenciesList = currencyParser.getCurrencyList();
-                    Log.v("FIRST_COIN", currenciesList.get(0).getName());
-//
-//                    CurrencyAdapter adapter = new CurrencyAdapter(this, currenciesList);
-//                    ListView listView = findViewById(R.id.listView);
-//                    listView.setAdapter(adapter);
+                CurrencyAdapter adapter = new CurrencyAdapter(this, currenciesList);
+                ListView listView = findViewById(R.id.listView);
+                listView.post(() -> listView.setAdapter(adapter));
 
 
 
-                }
-                catch (IOException ex){
-                    contentView.post(() -> {
-                        contentView.setText(getString(R.string.error_label).concat(Objects.requireNonNull(ex.getMessage())));
-                        Toast.makeText(getApplicationContext(), getString(R.string.error_label), Toast.LENGTH_SHORT).show();
-                    });
-                } catch (XmlPullParserException e) {
-                    throw new RuntimeException(e);
-                }
-            }).start();
-        });
+            }
+            catch (IOException ex){
+
+            } catch (XmlPullParserException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 
     private String getContent(String path) throws IOException {
@@ -108,14 +98,3 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
-// открывать новую страницу при загрузке
-// посмотреть как передать данные между этим экшеном и другим
-
-//1. загрузить данные
-//2. сохранить их
-//3. распарсить и положить в массив
-//4. отрисовать список по массиву
-
-//как открыть новую активность с теми же данными
-//показать в ней список
-//привязать изображения
